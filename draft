@@ -1,0 +1,45 @@
+Card class:
+  -- self.color
+  -- self.height
+  -- self.disambiguation (1,2 or 3 for investments)
+
+  -- init(color, height, disambiguation)
+
+Deck class:
+  -- self.cards: stack of cards
+
+  -- init()
+  -- reset()
+  -- giveHands(): returns 2 lists of 8 cards (one initial hand of 8 cards per player)
+  -- pickacard(): returns 1 card give the first card of the deck
+  -- numberOfCards: returns the number of cards remaining in the deck
+
+Board class:
+  -- a dictionnary per player, key is color, output is list of what has been played by the player in that color
+  -- canBePlayed(playerId, card): true if the player can play the card on his own board. 
+  -- getHighestCard(playerId,color): outputs a list of
+  -- getCards(playerId,color):
+  -- getEverything(): outputs the three dictionaries
+  -- pickADismissedCard(Color)
+  -- playCard(Card,Color,PlayerId): updates the board after the card has been played 
+
+Player:
+  -- self.playerId
+  -- self.Hand: list of Cards
+  -- STEP1(Board): outputs card and emplacement
+  -- STEP2(Board): deckID or colorID
+  -- addCard()
+
+AI (inherits from Player)
+  -- oerwrite STEP1
+  -- overwrite STEP2
+
+Human (inherits from Player)
+  -- overwrite STEP1: prompt, expect the card to be played and the slot
+  -- overwrite STEP2: prompt, expect the id of the slot from which to take a card
+
+Game:
+  -- init: takes types of player as input, and the number of rounds
+  -- attribut: scores
+  -- while loop
+  --
