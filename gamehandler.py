@@ -8,6 +8,8 @@ class Card():
 	"""
 	Implement one card
 	"""
+
+	color_order = {colors[i]: i for i in range(len(colors)) }
 	
 	def __init__(self, color, height, disambiguation=None):
 		"""
@@ -27,6 +29,21 @@ class Card():
 			return "%s %s"%(self.height, self.color)
 		else:
 			return "%s bet (%s)"%(self.color, self.disambiguation)
+
+	def __lt__(self, other):
+		if isinstance(other, Card):
+			answer = (color_order[self.color] < color_order[other.color])
+			return (answer or (self.height < other.height))
+		else:
+			return NotImplemented 
+
+	def __gt__(self, other):
+		if isinstance(other, Card):
+			answer = (color_order[self.color] > color_order[other.color])
+			return (answer or (self.height > other.height))
+		else:
+			return NotImplemented
+
 
 class Deck():
 	"""
@@ -101,7 +118,7 @@ class Board():
 		Arguments:
 			playerId (int): Id of the player who wants to play
 			card (Card): card which will be tested
-		return:
+		Return:
 			Boolean: True is the card can be played, false otherwise.
 		"""
 		if self.getHighestCard(playerId, card.color) is None:
