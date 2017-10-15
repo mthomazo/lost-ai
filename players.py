@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from gamehandler import Card, colors
+
 class Player():
 	"""
 	Mother class for all players, AI like humans
@@ -13,13 +15,18 @@ class Player():
 		self.playerId = playerId
 		self.hand = []
 
+	def __repr__(self):
+		return ("Player %s"%self.playerId)
+
 	def setHand(self, hand):
 		"""
 		Set the hand of the player
 		Arguments:
 			hand (list of Card): hand of the player
 		"""
-		self.hand = hand
+		self.hand = []
+		for card in hand:
+			self.addtoHand(card)
 
 	def play(self, board):
 		"""
@@ -32,7 +39,10 @@ class Player():
 				 0 if the card has to be dicarded
 		"""
 		temp = self.hand[0]
-		return (temp, 0)
+		if board.canBePlayed(self.playerId, temp):
+			return (temp, self.playerId)
+		else:
+			return (temp, 0)
 
 	def removeFromHand(self, card):
 		"""
@@ -54,17 +64,21 @@ class Player():
 		Arguments:
 			card (Card): card to be added
 		"""
+
 		i = 0
-		while card > self.hand[i]:
-			i +=1
-			if i == len(self.hand):
-				break
-		if i == 0:
-			self.hand = [card] + self.hand
-		elif i == len(self.hand):
-			self.hand = self.hand + [card] 
+		if len(self.hand) == 0:
+			self.hand = [card]
 		else:
-			self.hand = self.hand[:i] + [card] + self.hand[i:]
+			while card > self.hand[i]:
+				i +=1
+				if i == len(self.hand):
+					break
+			if i == 0:
+				self.hand = [card] + self.hand
+			elif i == len(self.hand):
+				self.hand = self.hand + [card] 
+			else:
+				self.hand = self.hand[:i] + [card] + self.hand[i:]
 
 	def draw(self, board):
 		"""
@@ -77,3 +91,68 @@ class Player():
 					dicard pile.
 		"""
 		return "deck"
+
+class Human(Player):
+	pass
+
+class AI(Player):
+
+	def play(self, board):
+		must_played = self._mustplayed(board)
+		if must_played is not None:
+			print("MUST PLAY")
+			return(must_played, self.playerId)
+		hand_temp = self.hand
+		i_temp = 0
+		cardToPlay = None
+		whereToPlay = self.playerId
+		while cardToPlay is None:
+			if hand_temp != []:
+				card_temp = hand_temp[0]
+				i_temp = 0
+				for i, card in enumerate(hand_temp):
+					if card.height < card_temp.height:
+						i_temp = i
+						card_temp = card
+				if board.canBePlayed(self.playerId, card_temp):
+					cardToPlay = card_temp
+				else:
+					if i_temp == 0:
+						hand_temp = hand_temp[1:]
+					elif i_temp == len(hand_temp) - 1:
+						hand_temp = hand_temp[:-1]
+					else:
+						hand_temp = hand_temp[:i_temp] + hand_temp[i_temp+1:]
+			else:
+				whereToPlay = 0
+				card_temp = self.hand[0]
+				for card in self.hand:
+					if card.height < card_temp.height:
+						card_temp = card
+				cardToPlay = card_temp
+		return (cardToPlay, whereToPlay)
+
+	def _mustplayed(self, board):
+		for color in colors:
+			temp = board.getHighestCard(self.playerId, color)
+			if temp is not None:
+				if temp.height != 0:
+					for card in self.hand:
+						if card == Card(temp.color, temp.height + 1):
+							return card
+		return None
+
+	def draw(self, board):
+		for color in colors:
+			temp = board.getHighestCard(0, color)
+			if temp is not None:
+				if board.canBePlayed(self.playerId, temp):
+					return color
+		return "deck"
+
+
+				
+
+
+
+
