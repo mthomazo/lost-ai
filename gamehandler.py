@@ -3,14 +3,13 @@
 import numpy as np
 
 colors = ["yellow", "blue", "white", "green", "red"]
-
+color_order = {colors[i]: i for i in range(len(colors)) }
+		
 class Card():
 	"""
 	Implement one card
 	"""
 
-	color_order = {colors[i]: i for i in range(len(colors)) }
-	
 	def __init__(self, color, height, disambiguation=None):
 		"""
 		Arguments:
@@ -32,18 +31,30 @@ class Card():
 
 	def __lt__(self, other):
 		if isinstance(other, Card):
-			answer = (color_order[self.color] < color_order[other.color])
-			return (answer or (self.height < other.height))
+			if (color_order[self.color] < color_order[other.color]):
+				return True
+			else:
+				answer = (color_order[self.color] == color_order[other.color])
+			return (answer and (self.height < other.height))
 		else:
 			return NotImplemented 
 
 	def __gt__(self, other):
 		if isinstance(other, Card):
-			answer = (color_order[self.color] > color_order[other.color])
-			return (answer or (self.height > other.height))
+			if (color_order[self.color] > color_order[other.color]):
+				return True
+			else:
+				answer = (color_order[self.color] == color_order[other.color])
+			return (answer and (self.height > other.height))
 		else:
 			return NotImplemented
 
+	def __eq__(self, other):
+		if isinstance(other, Card):
+			return ((self.color == other.color) and (self.height == other.height))
+		else:
+			return NotImplemented
+			
 
 class Deck():
 	"""
@@ -106,6 +117,16 @@ class Board():
 	"""
 
 	def __init__(self):
+		player1 = {color: [] for color in colors}
+		player2 = {color: [] for color in colors}
+		discardpile = {color: [] for color in colors}
+
+		self.players = {0: discardpile, 1: player1, 2: player2}
+
+	def reset(self):
+		"""
+		Reset the board to the initial position
+		"""
 		player1 = {color: [] for color in colors}
 		player2 = {color: [] for color in colors}
 		discardpile = {color: [] for color in colors}
@@ -175,7 +196,7 @@ class Board():
 			self.players[0][color] = self.players[0][color][: -1]
 			return temp[-1]
 		else:
-			raise ValueError("Discard pile is empty !")
+			return None
 
 	def playCard(self, playerId, card):
 		"""
@@ -189,6 +210,31 @@ class Board():
 			self.players[playerId][card.color].append(card)
 		else:
 			raise ValueError("Card can't be played")
+
+	def countScore(self):
+		scores = [0, 0]
+		for i in range(1, 3):
+			for color in colors:
+				playedCards = self.players[i][color]
+				if playedCards == []:
+					continue
+				if len(playedCards) > 7:
+					toadd = 20
+				else:
+					toadd = 0
+				temp = -20
+				multiplier = 1
+				while playedCards[0].height == 0:
+					multiplier += 1
+					playedCards = playedCards[1:]
+					if len(playedCards) == 0:
+						break
+				temp += np.sum([card.height for card in playedCards])
+				temp *= multiplier
+				temp += toadd
+				scores[i-1] += temp
+		return scores	
+
 
 
 if __name__ == "__main__":
